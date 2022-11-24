@@ -44,7 +44,7 @@ class ContainerConfigurator implements ContainerConfiguratorInterface
         $parser = $this->getParser();
 
         foreach ($configFilePathList as $configFilePath) {
-            $package = $parser->parseFile($path, Yaml::PARSE_CONSTANT | Yaml::PARSE_CUSTOM_TAGS);
+            $package = $parser->parseFile($configFilePath, Yaml::PARSE_CONSTANT | Yaml::PARSE_CUSTOM_TAGS);
             $this->packages[basename($configFilePath, '.yaml')] = $package;
         }
     }
