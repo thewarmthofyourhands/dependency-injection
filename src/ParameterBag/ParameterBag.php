@@ -33,21 +33,33 @@ class ParameterBag implements ParameterBagInterface
     public function get(string $name): array|bool|string|int|float|\UnitEnum|null
     {
         $parameters = $this->parameters;
+
         if (true === isset($parameters[$name])) {
             return $parameters[$name];
         }
 
-        $result = $parameters[$name] ?? false;
+        $findParam = explode('.', $name);
 
-        if (false === $result) {
-            $findParam = explode('.', $name);
-            $result = (static function (array $findParam) use ($parameters) {
-                foreach ($findParam as $item) {
-                    $parameters = $parameters[$item];
+        $result = (static function (array $findParam) use ($parameters) {
+            $parameterKey = null;
+            $parametersIterator = $parameters;
+            foreach ($findParam as $item) {
+                if (null !== $parameterKey) {
+                    $parameterKey .= '.'. $item;
+                } else {
+                    $parameterKey = $item;
                 }
-                return $parameters;
-            })($findParam);
-        }
+
+                if (false === isset($parametersIterator[$parameterKey])) {
+                    continue;
+                }
+
+                $parametersIterator = $parametersIterator[$parameterKey];
+                $parameterKey = null;
+            }
+
+            return $parametersIterator;
+        })($findParam);
 
         return $result;
     }
