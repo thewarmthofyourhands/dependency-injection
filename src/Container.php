@@ -99,18 +99,28 @@ class Container implements ContainerInterface
 
         $serviceClass = $definition->getClass();
         $ref = new \ReflectionClass($serviceClass);
-        $parameters = $ref->getConstructor()?->getParameters() ?? [];
+        $constructParameters = $ref->getConstructor()?->getParameters() ?? [];
         $args = [];
 
-        foreach ($parameters as $parameter) {
-            if (isset($definition->getArguments()[$parameter->getName()])) {
-                $args[] = $definition->getArguments()[$parameter->getName()];
+        foreach ($constructParameters as $constructParameter) {
+            if (isset($definition->getArguments()[$constructParameter->getName()])) {
+                $argId = trim($definition->getArguments()[$constructParameter->getName()], '%');
+
+                if ($parameter = $this->getParameter($argId)) {
+                    $args[] = $parameter;
+                } else {
+                    $args[] = $this->get($argId);
+                }
+
                 continue;
             }
 
-            $argType = $parameter->getType()->getName();
+            $argType = $constructParameter->getType()->getName();
             $serviceId = $this->aliases[$argType] ?? null;
-            $args[] = $this->get($serviceId ?? $argType);
+
+            if ($arg = $this->get($serviceId ?? $argType)) {
+                $args[] = $arg;
+            }
         }
 
         $serviceObject = new $serviceClass(...$args);

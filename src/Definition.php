@@ -26,4 +26,19 @@ class Definition
     {
         return $this->calls;
     }
+
+    public function setClass(string $class): void
+    {
+        $this->class = $class;
+    }
+
+    public function setArguments(array $arguments): void
+    {
+        $this->arguments = $arguments;
+    }
+
+    public function setCalls(array $calls): void
+    {
+        $this->calls = $calls;
+    }
 }

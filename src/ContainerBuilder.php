@@ -63,12 +63,30 @@ class ContainerBuilder implements ContainerBuilderInterface
         }
 
         if (is_array($serviceConfig[1])) {
-            $class = $serviceConfig[1]['class'] ?? $this->aliases[$serviceConfig[0]];
-            $definition = new Definition(
-                $class,
-                $serviceConfig[1]['arguments'] ?? [],
-                $serviceConfig[1]['calls'] ?? [],
-            );
+            $class = $serviceConfig[1]['class'] ?? null;
+            $arguments = $serviceConfig[1]['arguments'] ?? [];
+            $calls = $serviceConfig[1]['calls'] ?? [];
+
+            if (true === isset($serviceConfig[1]['parent'])) {
+                $parentClass = $this->aliases[$serviceConfig[1]['parent']] ?? $serviceConfig[1]['parent'];
+                $parentDefinitions = $this->services[$parentClass];
+                $arguments = $parentDefinitions->getArguments() + $arguments;
+                $calls = $parentDefinitions->getCalls() + $calls;
+            }
+
+            if (null !== $class) {
+                $definition = new Definition(
+                    $class,
+                    $arguments,
+                    $calls,
+                );
+            } else {
+                $class = $this->aliases[$serviceConfig[0]] ?? $serviceConfig[0];
+                $definition = $this->services[$class];
+                $definition->setCalls($calls);
+                $definition->setArguments($arguments);
+                return;
+            }
         } else {
             $definition = new Definition($serviceConfig[1]);
         }
