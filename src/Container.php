@@ -68,6 +68,8 @@ class Container implements ContainerInterface
 
     public function set(string $id, null|object $service): void
     {
+        $id = $this->aliases[$id] ?? $id;
+
         if (isset($this->services[$id])) {
             throw new \Exception(sprintf('The "%s" service is already initialized, you cannot replace it.', $id));
         }
